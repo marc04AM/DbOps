@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLC Alarm Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-1: #f6efe7;
+            --bg-2: #e7f1f0;
+            --ink: #1b1b1b;
+            --muted: #5b5b5b;
+            --accent: #e07a5f;
+            --accent-2: #3d6b6b;
+            --card: rgba(255, 255, 255, 0.88);
+            --stroke: rgba(30, 30, 30, 0.12);
+            --success: #2b8a5c;
+            --danger: #c04545;
+            --shadow: 0 20px 50px rgba(15, 15, 15, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            color: var(--ink);
+            background: radial-gradient(circle at top, rgba(224, 122, 95, 0.15), transparent 45%),
+                linear-gradient(140deg, var(--bg-1), var(--bg-2));
+        }
+
+        .page {
+            position: relative;
+            min-height: 100vh;
+            padding: 32px 20px 64px;
+        }
+
+        .bg-orbs {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 15% 20%, rgba(61, 107, 107, 0.18), transparent 50%),
+                radial-gradient(circle at 85% 10%, rgba(224, 122, 95, 0.12), transparent 45%),
+                radial-gradient(circle at 70% 80%, rgba(61, 107, 107, 0.12), transparent 55%);
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .app-shell {
+            position: relative;
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--stroke);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+        }
+
+        .hero {
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .hero-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 11px;
+            color: var(--muted);
+            margin: 0;
+        }
+
+        .title {
+            font-family: "Fraunces", serif;
+            font-size: 26px;
+            margin: 6px 0 0;
+        }
+
+        .subtitle {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid var(--stroke);
+            background: #fff;
+        }
+
+        .status-pill.ok {
+            color: var(--success);
+        }
+
+        .status-pill.off {
+            color: var(--muted);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--stroke);
+            background: #fff;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .input:focus {
+            outline: 2px solid rgba(224, 122, 95, 0.25);
+            border-color: var(--accent);
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-weight: 600;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(224, 122, 95, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: var(--ink);
+            border-color: var(--stroke);
+        }
+
+        .btn-success {
+            background: var(--accent-2);
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(61, 107, 107, 0.22);
+        }
+
+        .section-card {
+            padding: 20px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .badge {
+            background: #fff;
+            border: 1px solid var(--stroke);
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+        }
+
+        .table th {
+            text-align: left;
+            padding: 10px;
+            background: #f4f1ed;
+            border-bottom: 1px solid var(--stroke);
+        }
+
+        .table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--stroke);
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table td .input {
+            padding: 6px 8px;
+            font-size: 13px;
+        }
+
+        .callout {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .notice {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            color: #fff;
+            box-shadow: var(--shadow);
+            z-index: 50;
+        }
+
+        .notice.success {
+            background: var(--success);
+        }
+
+        .notice.error {
+            background: var(--danger);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease both;
+        }
+
+        .slide-up {
+            animation: slideUp 0.6s ease both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 720px) {
+            .hero {
+                padding: 20px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .notice {
+                right: 16px;
+                left: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function PLCAlarmManager() {
+            const [searchQuery, setSearchQuery] = useState('');
+            const [updateRecords, setUpdateRecords] = useState([]);
+            const [insertRecords, setInsertRecords] = useState([]);
+            const [blockedRecords, setBlockedRecords] = useState([]);
+            const [showNotification, setShowNotification] = useState(false);
+            const [notificationMessage, setNotificationMessage] = useState('');
+            const [notificationType, setNotificationType] = useState('success');
+            const [isConnected, setIsConnected] = useState(false);
+            const [isLoading, setIsLoading] = useState(false);
+
+            const [dbConfig, setDbConfig] = useState({
+                host: 'localhost',
+                port: '3306',
+                database: '',
+                user: '',
+                password: ''
+            });
+            const [showConfig, setShowConfig] = useState(true);
+
+            const API_URL = window.location.origin.includes('localhost') 
+                ? 'http://localhost:3000'
+                : '/api';
+
+            const showNotificationMessage = (message, type = 'success') => {
+                setNotificationMessage(message);
+                setNotificationType(type);
+                setShowNotification(true);
+                setTimeout(() => setShowNotification(false), 3000);
+            };
+
+            const connectToDatabase = async () => {
+                setIsLoading(true);
+                try {
+                    const response = await fetch(`${API_URL}/api/connect`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(dbConfig)
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        setIsConnected(true);
+                        setShowConfig(false);
+                        showNotificationMessage('Connessione al database riuscita!', 'success');
+                    } else {
+                        showNotificationMessage(`Errore: ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    showNotificationMessage(`Errore di connessione: ${error.message}`, 'error');
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            const handleSearch = async () => {
+                if (!searchQuery.trim()) {
+                    showNotificationMessage('Inserisci una chiave di ricerca', 'error');
+                    return;
+                }
+
+                if (!isConnected) {
+                    showNotificationMessage('Connettiti prima al database', 'error');
+                    return;
+                }
+
+                setIsLoading(true);
+                try {
+                    const response = await fetch(`${API_URL}/api/search`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ query: searchQuery })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        setUpdateRecords(prev => {
+                            const combined = [...prev, ...data.updates];
+                            return Array.from(new Map(combined.map(item => [item.StringName, item])).values());
+                        });
+
+                        setInsertRecords(prev => {
+                            const combined = [...prev, ...data.inserts];
+                            return Array.from(new Map(combined.map(item => [item.StringName, item])).values());
+                        });
+
+                        setBlockedRecords(prev => {
+                            const combined = [...prev, ...data.blocked];
+                            return Array.from(new Map(combined.map(item => [item.StringName, item])).values());
+                        });
+
+                        showNotificationMessage(
+                            `Trovati: ${data.updates.length} da aggiornare, ${data.inserts.length} da inserire, ${data.blocked.length} bloccati`,
+                            'success'
+                        );
+                    } else {
+                        showNotificationMessage(`Errore nella ricerca: ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    showNotificationMessage(`Errore di ricerca: ${error.message}`, 'error');
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            const handleUpdateChange = (index, field, value) => {
+                const newRecords = [...updateRecords];
+                newRecords[index][field] = value;
+                setUpdateRecords(newRecords);
+            };
+
+            const handleInsertChange = (index, field, value) => {
+                const newRecords = [...insertRecords];
+                newRecords[index][field] = value;
+                setInsertRecords(newRecords);
+            };
+
+            const handleApply = async () => {
+                if (updateRecords.length === 0 && insertRecords.length === 0) {
+                    showNotificationMessage('Nessuna modifica da applicare', 'error');
+                    return;
+                }
+
+                if (!isConnected) {
+                    showNotificationMessage('Connettiti prima al database', 'error');
+                    return;
+                }
+
+                setIsLoading(true);
+                try {
+                    const response = await fetch(`${API_URL}/api/apply`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            updates: updateRecords,
+                            inserts: insertRecords
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showNotificationMessage(
+                            `Database aggiornato: ${data.updated} record aggiornati, ${data.inserted} record inseriti`,
+                            'success'
+                        );
+
+                        setUpdateRecords([]);
+                        setInsertRecords([]);
+                    } else if (data.blocked && data.blocked.length > 0) {
+                        showNotificationMessage(`Chiavi bloccate: ${data.blocked.join(', ')}`, 'error');
+                    } else {
+                        showNotificationMessage(`Errore nell'applicazione: ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    showNotificationMessage(`Errore di applicazione: ${error.message}`, 'error');
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            return (
+                <div className="page">
+                    <div className="bg-orbs" aria-hidden="true"></div>
+
+                    {showNotification && (
+                        <div className={`notice ${notificationType === 'success' ? 'success' : 'error'}`}>
+                            {notificationMessage}
+                        </div>
+                    )}
+
+                    <div className="app-shell">
+                        <section className="card hero fade-in">
+                            <div className="hero-header">
+                                <div>
+                                    <p className="eyebrow">Procedura assistita</p>
+                                    <h1 className="title">Inserimento allarmi PLC</h1>
+                                </div>
+                                <div className="controls">
+                                    <span className={`status-pill ${isConnected ? 'ok' : 'off'}`}>
+                                        {isConnected ? '? Connesso' : '? Non connesso'}
+                                    </span>
+                                    {isConnected && (
+                                        <button
+                                            className="btn btn-secondary"
+                                            onClick={() => setShowConfig(prev => !prev)}
+                                        >
+                                            {showConfig ? 'Nascondi config' : 'Cambia DB'}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                            <p className="subtitle">
+                                Ricerca, verifica e aggiorna testi in <strong>language_plcalm</strong> mantenendo protette le chiavi di <strong>language_spv</strong>.
+                            </p>
+
+                            {showConfig && (
+                                <div className="card section-card slide-up">
+                                    <div className="section-title">
+                                        <h2 className="text-sm font-semibold">Configurazione database</h2>
+                                        <span className="badge">Connessione manuale</span>
+                                    </div>
+                                    <div className="grid-2">
+                                        <input type="text" placeholder="Host" value={dbConfig.host}
+                                            onChange={(e) => setDbConfig({...dbConfig, host: e.target.value})}
+                                            className="input" />
+                                        <input type="text" placeholder="Porta" value={dbConfig.port}
+                                            onChange={(e) => setDbConfig({...dbConfig, port: e.target.value})}
+                                            className="input" />
+                                        <input type="text" placeholder="Database" value={dbConfig.database}
+                                            onChange={(e) => setDbConfig({...dbConfig, database: e.target.value})}
+                                            className="input" />
+                                        <input type="text" placeholder="Utente" value={dbConfig.user}
+                                            onChange={(e) => setDbConfig({...dbConfig, user: e.target.value})}
+                                            className="input" />
+                                        <input type="password" placeholder="Password" value={dbConfig.password}
+                                            onChange={(e) => setDbConfig({...dbConfig, password: e.target.value})}
+                                            className="input" />
+                                    </div>
+                                    <div className="controls" style={{ marginTop: '14px' }}>
+                                        <button onClick={connectToDatabase} disabled={isLoading}
+                                            className="btn btn-primary">
+                                            {isLoading ? 'Connessione...' : 'CONNETTI'}
+                                        </button>
+                                        <span className="callout">Inserisci i parametri del DB e avvia la sessione.</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {isConnected && (
+                                <div className="card section-card slide-up">
+                                    <div className="section-title">
+                                        <h2 className="text-sm font-semibold">Ricerca chiave</h2>
+                                        <span className="badge">wildcard % e _</span>
+                                    </div>
+                                    <div className="controls">
+                                        <input type="text" value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            placeholder="Cerca chiave..."
+                                            className="input" />
+                                        <button onClick={handleSearch} disabled={isLoading}
+                                            className="btn btn-success">
+                                            {isLoading ? 'Ricerca...' : 'SEARCH'}
+                                        </button>
+                                    </div>
+                                    <div className="callout" style={{ marginTop: '10px' }}>
+                                        Usa % per prefissi/suffissi e _ per un singolo carattere. Ogni ricerca aggiunge risultati alle tabelle sotto.
+                                    </div>
+                                </div>
+                            )}
+                        </section>
+
+                        {updateRecords.length > 0 && (
+                            <section className="card section-card slide-up">
+                                <div className="section-title">
+                                    <h2 className="text-sm font-semibold">UPDATE</h2>
+                                    <span className="badge">{updateRecords.length} record</span>
+                                </div>
+                                <div className="table-wrap">
+                                    <table className="table">
+                                        <thead>
+                                            <tr>
+                                                <th>StringName</th>
+                                                <th>Italian</th>
+                                                <th>English</th>
+                                                <th>Other</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {updateRecords.map((record, idx) => (
+                                                <tr key={idx}>
+                                                    <td>{record.StringName}</td>
+                                                    <td>
+                                                        <input type="text" value={record.Italian}
+                                                            onChange={(e) => handleUpdateChange(idx, 'Italian', e.target.value)}
+                                                            className="input" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" value={record.English}
+                                                            onChange={(e) => handleUpdateChange(idx, 'English', e.target.value)}
+                                                            className="input" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" value={record.Other}
+                                                            onChange={(e) => handleUpdateChange(idx, 'Other', e.target.value)}
+                                                            className="input" />
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+                        )}
+
+                        {insertRecords.length > 0 && (
+                            <section className="card section-card slide-up">
+                                <div className="section-title">
+                                    <h2 className="text-sm font-semibold">INSERT</h2>
+                                    <span className="badge">{insertRecords.length} record</span>
+                                </div>
+                                <div className="table-wrap">
+                                    <table className="table">
+                                        <thead>
+                                            <tr>
+                                                <th>StringName</th>
+                                                <th>Italian</th>
+                                                <th>English</th>
+                                                <th>Other</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {insertRecords.map((record, idx) => (
+                                                <tr key={idx}>
+                                                    <td>{record.StringName}</td>
+                                                    <td>
+                                                        <input type="text" value={record.Italian}
+                                                            onChange={(e) => handleInsertChange(idx, 'Italian', e.target.value)}
+                                                            className="input" placeholder="Italiano" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" value={record.English}
+                                                            onChange={(e) => handleInsertChange(idx, 'English', e.target.value)}
+                                                            className="input" placeholder="English" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" value={record.Other}
+                                                            onChange={(e) => handleInsertChange(idx, 'Other', e.target.value)}
+                                                            className="input" placeholder="Altro" />
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+                        )}
+
+                        {(updateRecords.length > 0 || insertRecords.length > 0) && (
+                            <div className="controls" style={{ justifyContent: 'flex-end' }}>
+                                <button onClick={handleApply} disabled={isLoading}
+                                    className="btn btn-success" style={{ padding: '12px 28px' }}>
+                                    {isLoading ? 'Applicazione...' : 'APPLY'}
+                                </button>
+                            </div>
+                        )}
+
+                        {blockedRecords.length > 0 && (
+                            <section className="card section-card slide-up">
+                                <div className="section-title">
+                                    <h2 className="text-sm font-semibold">BLOCCATE</h2>
+                                    <span className="badge">{blockedRecords.length} record</span>
+                                </div>
+                                <div className="table-wrap">
+                                    <table className="table">
+                                        <thead>
+                                            <tr>
+                                                <th>StringName</th>
+                                                <th>Stato</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {blockedRecords.map((record, idx) => (
+                                                <tr key={idx}>
+                                                    <td>{record.StringName}</td>
+                                                    <td className="callout" style={{ color: 'var(--danger)' }}>
+                                                        NON INSERIBILE
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<PLCAlarmManager />, document.getElementById('root'));
+    </script>
+</body>
+</html>
