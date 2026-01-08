@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
@@ -6,24 +6,25 @@
     <title>PLC Alarm Manager</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
+        <style>
         :root {
-            --bg-1: #f6efe7;
-            --bg-2: #e7f1f0;
-            --ink: #1b1b1b;
-            --muted: #5b5b5b;
-            --accent: #e07a5f;
-            --accent-2: #3d6b6b;
-            --card: rgba(255, 255, 255, 0.88);
-            --stroke: rgba(30, 30, 30, 0.12);
-            --success: #2b8a5c;
-            --danger: #c04545;
-            --shadow: 0 20px 50px rgba(15, 15, 15, 0.08);
+            --bg-1: #f1f3f5;
+            --bg-2: #dfe3e6;
+            --ink: #121619;
+            --muted: #5a6770;
+            --accent: #f36c21;
+            --accent-2: #7a8791;
+            --card: #f7f9fb;
+            --panel: #e9edf0;
+            --stroke: #c1c8ce;
+            --success: #2f8f5b;
+            --danger: #b13f3f;
+            --shadow: 0 16px 40px rgba(18, 22, 25, 0.12);
         }
 
         * {
@@ -33,10 +34,14 @@
         body {
             margin: 0;
             min-height: 100vh;
-            font-family: "Space Grotesk", "Segoe UI", sans-serif;
+            font-family: "IBM Plex Sans Condensed", "Segoe UI", sans-serif;
             color: var(--ink);
-            background: radial-gradient(circle at top, rgba(224, 122, 95, 0.15), transparent 45%),
-                linear-gradient(140deg, var(--bg-1), var(--bg-2));
+            background-color: var(--bg-1);
+            background-image:
+                linear-gradient(160deg, var(--bg-1), var(--bg-2)),
+                repeating-linear-gradient(0deg, rgba(18, 22, 25, 0.05) 0, rgba(18, 22, 25, 0.05) 1px, transparent 1px, transparent 24px),
+                repeating-linear-gradient(90deg, rgba(18, 22, 25, 0.05) 0, rgba(18, 22, 25, 0.05) 1px, transparent 1px, transparent 24px);
+            background-attachment: fixed;
         }
 
         .page {
@@ -48,10 +53,10 @@
         .bg-orbs {
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at 15% 20%, rgba(61, 107, 107, 0.18), transparent 50%),
-                radial-gradient(circle at 85% 10%, rgba(224, 122, 95, 0.12), transparent 45%),
-                radial-gradient(circle at 70% 80%, rgba(61, 107, 107, 0.12), transparent 55%);
-            opacity: 0.7;
+            background:
+                linear-gradient(120deg, rgba(243, 108, 33, 0.18), transparent 45%),\n                linear-gradient(320deg, rgba(90, 103, 112, 0.18), transparent 45%),
+                repeating-linear-gradient(135deg, rgba(90, 103, 112, 0.12) 0, rgba(90, 103, 112, 0.12) 2px, transparent 2px, transparent 14px);
+            opacity: 0.5;
             pointer-events: none;
         }
 
@@ -65,11 +70,10 @@
         }
 
         .card {
-            background: var(--card);
+            background: linear-gradient(180deg, #f9fbfd, #eef3f6);
             border: 1px solid var(--stroke);
-            border-radius: 20px;
+            border-radius: 12px;
             box-shadow: var(--shadow);
-            backdrop-filter: blur(12px);
         }
 
         .hero {
@@ -77,6 +81,7 @@
             display: flex;
             flex-direction: column;
             gap: 18px;
+            border-left: 6px solid var(--accent);
         }
 
         .hero-header {
@@ -96,8 +101,9 @@
         }
 
         .title {
-            font-family: "Fraunces", serif;
-            font-size: 26px;
+            font-family: "IBM Plex Mono", "Segoe UI", monospace;
+            font-size: 24px;
+            letter-spacing: 0.02em;
             margin: 6px 0 0;
         }
 
@@ -113,10 +119,21 @@
             gap: 8px;
             padding: 6px 12px;
             border-radius: 999px;
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
             border: 1px solid var(--stroke);
-            background: #fff;
+            background: var(--panel);
+        }
+
+        .status-pill::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            box-shadow: 0 0 0 2px rgba(18, 22, 25, 0.12);
         }
 
         .status-pill.ok {
@@ -143,22 +160,26 @@
         .input {
             width: 100%;
             padding: 10px 12px;
-            border-radius: 12px;
+            border-radius: 8px;
             border: 1px solid var(--stroke);
             background: #fff;
             font-family: inherit;
             font-size: 14px;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
         }
 
         .input:focus {
-            outline: 2px solid rgba(224, 122, 95, 0.25);
+            outline: 2px solid rgba(243, 108, 33, 0.35);
             border-color: var(--accent);
         }
 
         .btn {
             padding: 10px 18px;
-            border-radius: 12px;
-            font-weight: 600;
+            border-radius: 8px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-size: 12px;
             border: 1px solid transparent;
             cursor: pointer;
             transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
@@ -172,8 +193,9 @@
 
         .btn-primary {
             background: var(--accent);
-            color: #fff;
-            box-shadow: 0 10px 24px rgba(224, 122, 95, 0.25);
+            color: #1b1b1b;
+            border-color: #d65a1c;
+            box-shadow: 0 10px 24px rgba(243, 108, 33, 0.25);
         }
 
         .btn-primary:hover {
@@ -187,9 +209,10 @@
         }
 
         .btn-success {
-            background: var(--accent-2);
+            background: var(--accent);
             color: #fff;
-            box-shadow: 0 10px 24px rgba(61, 107, 107, 0.22);
+            border-color: #d65a1c;
+            box-shadow: 0 10px 24px rgba(243, 108, 33, 0.25);
         }
 
         .section-card {
@@ -204,12 +227,14 @@
         }
 
         .badge {
-            background: #fff;
+            background: var(--panel);
             border: 1px solid var(--stroke);
             border-radius: 999px;
             padding: 4px 10px;
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
 
         .table-wrap {
@@ -226,13 +251,20 @@
         .table th {
             text-align: left;
             padding: 10px;
-            background: #f4f1ed;
+            background: #e7edf2;
             border-bottom: 1px solid var(--stroke);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 11px;
         }
 
         .table td {
             padding: 10px;
             border-bottom: 1px solid var(--stroke);
+        }
+
+        .table tbody tr:nth-child(even) {
+            background: #f4f7fa;
         }
 
         .table tr:last-child td {
@@ -257,8 +289,9 @@
             top: 24px;
             right: 24px;
             padding: 14px 18px;
-            border-radius: 14px;
+            border-radius: 10px;
             color: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.2);
             box-shadow: var(--shadow);
             z-index: 50;
         }
@@ -702,3 +735,5 @@
     </script>
 </body>
 </html>
+
+
