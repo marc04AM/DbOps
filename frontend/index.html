@@ -208,6 +208,19 @@
             border-color: var(--stroke);
         }
 
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+            border-color: #9d3333;
+            box-shadow: 0 10px 24px rgba(177, 63, 63, 0.25);
+            padding: 6px 12px;
+            font-size: 11px;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-1px);
+        }
+
         .btn-success {
             background: var(--accent);
             color: #fff;
@@ -304,6 +317,97 @@
             background: var(--danger);
         }
 
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(18, 22, 25, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal {
+            background: linear-gradient(180deg, #f9fbfd, #eef3f6);
+            border: 1px solid var(--stroke);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 28px;
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--stroke);
+            padding-bottom: 14px;
+        }
+
+        .modal-title {
+            font-family: "IBM Plex Mono", "Segoe UI", monospace;
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+            color: var(--ink);
+        }
+
+        .modal-content {
+            margin-bottom: 20px;
+        }
+
+        .summary-section {
+            margin-bottom: 16px;
+        }
+
+        .summary-section h3 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            margin: 0 0 8px 0;
+            font-weight: 600;
+        }
+
+        .summary-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background: #fff;
+            border: 1px solid var(--stroke);
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .summary-list li {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--stroke);
+            font-size: 13px;
+            font-family: "IBM Plex Mono", monospace;
+            word-break: break-word;
+        }
+
+        .summary-list li:last-child {
+            border-bottom: none;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .notice.error {
+            background: var(--danger);
+        }
+
         .fade-in {
             animation: fadeIn 0.6s ease both;
         }
@@ -359,6 +463,8 @@
             const [notificationType, setNotificationType] = useState('success');
             const [isConnected, setIsConnected] = useState(false);
             const [isLoading, setIsLoading] = useState(false);
+            const [showConfirm, setShowConfirm] = useState(false);
+            const [pendingChanges, setPendingChanges] = useState({ updates: [], inserts: [] });
 
             const [dbConfig, setDbConfig] = useState({
                 host: 'localhost',
@@ -468,6 +574,14 @@
                 setInsertRecords(newRecords);
             };
 
+            const handleDeleteUpdateRecord = (index) => {
+                setUpdateRecords(updateRecords.filter((_, idx) => idx !== index));
+            };
+
+            const handleDeleteInsertRecord = (index) => {
+                setInsertRecords(insertRecords.filter((_, idx) => idx !== index));
+            };
+
             const handleApply = async () => {
                 if (updateRecords.length === 0 && insertRecords.length === 0) {
                     showNotificationMessage('Nessuna modifica da applicare', 'error');
@@ -479,14 +593,22 @@
                     return;
                 }
 
+                setPendingChanges({
+                    updates: updateRecords,
+                    inserts: insertRecords
+                });
+                setShowConfirm(true);
+            };
+
+            const handleConfirmApply = async () => {
                 setIsLoading(true);
                 try {
                     const response = await fetch(`${API_URL}/api/apply`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            updates: updateRecords,
-                            inserts: insertRecords
+                            updates: pendingChanges.updates,
+                            inserts: pendingChanges.inserts
                         })
                     });
 
@@ -500,6 +622,8 @@
 
                         setUpdateRecords([]);
                         setInsertRecords([]);
+                        setShowConfirm(false);
+                        setPendingChanges({ updates: [], inserts: [] });
                     } else if (data.blocked && data.blocked.length > 0) {
                         showNotificationMessage(`Chiavi bloccate: ${data.blocked.join(', ')}`, 'error');
                     } else {
@@ -510,6 +634,11 @@
                 } finally {
                     setIsLoading(false);
                 }
+            };
+
+            const handleCancelApply = () => {
+                setShowConfirm(false);
+                setPendingChanges({ updates: [], inserts: [] });
             };
 
             return (
@@ -617,6 +746,7 @@
                                                 <th>Italian</th>
                                                 <th>English</th>
                                                 <th>Other</th>
+                                                <th style={{ width: '80px', textAlign: 'center' }}>Azione</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -637,6 +767,12 @@
                                                         <input type="text" value={record.Other}
                                                             onChange={(e) => handleUpdateChange(idx, 'Other', e.target.value)}
                                                             className="input" />
+                                                    </td>
+                                                    <td style={{ textAlign: 'center' }}>
+                                                        <button onClick={() => handleDeleteUpdateRecord(idx)}
+                                                            className="btn btn-danger">
+                                                            ELIMINA
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -660,6 +796,7 @@
                                                 <th>Italian</th>
                                                 <th>English</th>
                                                 <th>Other</th>
+                                                <th style={{ width: '80px', textAlign: 'center' }}>Azione</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -681,6 +818,12 @@
                                                             onChange={(e) => handleInsertChange(idx, 'Other', e.target.value)}
                                                             className="input" placeholder="Altro" />
                                                     </td>
+                                                    <td style={{ textAlign: 'center' }}>
+                                                        <button onClick={() => handleDeleteInsertRecord(idx)}
+                                                            className="btn btn-danger">
+                                                            ELIMINA
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -695,6 +838,55 @@
                                     className="btn btn-success" style={{ padding: '12px 28px' }}>
                                     {isLoading ? 'Applicazione...' : 'APPLY'}
                                 </button>
+                            </div>
+                        )}
+
+                        {showConfirm && (
+                            <div className="modal-overlay" onClick={handleCancelApply}>
+                                <div className="modal" onClick={(e) => e.stopPropagation()}>
+                                    <div className="modal-header">
+                                        <h2 className="modal-title">Riepilogo delle modifiche</h2>
+                                    </div>
+                                    
+                                    <div className="modal-content">
+                                        {pendingChanges.updates.length > 0 && (
+                                            <div className="summary-section">
+                                                <h3>Record da aggiornare ({pendingChanges.updates.length})</h3>
+                                                <ul className="summary-list">
+                                                    {pendingChanges.updates.map((record, idx) => (
+                                                        <li key={idx}>
+                                                            <strong>{record.StringName}</strong><br/>
+                                                            IT: {record.Italian || '(vuoto)'} | EN: {record.English || '(vuoto)'} | OTHER: {record.Other || '(vuoto)'}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+
+                                        {pendingChanges.inserts.length > 0 && (
+                                            <div className="summary-section">
+                                                <h3>Record da inserire ({pendingChanges.inserts.length})</h3>
+                                                <ul className="summary-list">
+                                                    {pendingChanges.inserts.map((record, idx) => (
+                                                        <li key={idx}>
+                                                            <strong>{record.StringName}</strong><br/>
+                                                            IT: {record.Italian || '(vuoto)'} | EN: {record.English || '(vuoto)'} | OTHER: {record.Other || '(vuoto)'}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="modal-actions">
+                                        <button onClick={handleCancelApply} className="btn btn-secondary">
+                                            ANNULLA
+                                        </button>
+                                        <button onClick={handleConfirmApply} disabled={isLoading} className="btn btn-success">
+                                            {isLoading ? 'Applicazione...' : 'CONFERMA'}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
