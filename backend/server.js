@@ -10,26 +10,6 @@ app.use(express.json());
 
 let dbConnection = null;
 
-const dbConfig = {
-  host: process.env.DB_HOST || 'mysql',
-  port: parseInt(process.env.DB_PORT) || 3306,
-  database: process.env.DB_NAME || 'plc_alarms',
-  user: process.env.DB_USER || 'plcuser',
-  password: process.env.DB_PASSWORD || 'plcpassword'
-};
-
-async function initConnection() {
-  try {
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    dbConnection = await mysql.createConnection(dbConfig);
-    console.log('✓ Connesso al database MySQL');
-  } catch (error) {
-    console.error('✗ Errore connessione DB:', error.message);
-  }
-}
-
-initConnection();
-
 app.post('/api/connect', async (req, res) => {
   const { host, port, database, user, password } = req.body;
 
@@ -39,11 +19,11 @@ app.post('/api/connect', async (req, res) => {
     }
 
     dbConnection = await mysql.createConnection({
-      host: host || dbConfig.host,
-      port: parseInt(port) || dbConfig.port,
-      database: database || dbConfig.database,
-      user: user || dbConfig.user,
-      password: password || dbConfig.password
+      host: host,
+      port: parseInt(port),
+      database: database,
+      user: user,
+      password: password
     });
 
     await dbConnection.ping();
