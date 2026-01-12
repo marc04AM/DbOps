@@ -467,11 +467,11 @@
             const [pendingChanges, setPendingChanges] = useState({ updates: [], inserts: [] });
 
             const [dbConfig, setDbConfig] = useState({
-                host: 'localhost',
+                host: '192.168.10.10',
                 port: '3306',
-                database: '',
-                user: '',
-                password: ''
+                database: 'sistec',
+                user: 'sistec',
+                password: 'utsistec'
             });
             const [showConfig, setShowConfig] = useState(true);
 
@@ -683,21 +683,36 @@
                                         <span className="badge">Connessione manuale</span>
                                     </div>
                                     <div className="grid-2">
-                                        <input type="text" placeholder="Host" value={dbConfig.host}
-                                            onChange={(e) => setDbConfig({...dbConfig, host: e.target.value})}
-                                            className="input" />
-                                        <input type="text" placeholder="Porta" value={dbConfig.port}
-                                            onChange={(e) => setDbConfig({...dbConfig, port: e.target.value})}
-                                            className="input" />
-                                        <input type="text" placeholder="Database" value={dbConfig.database}
-                                            onChange={(e) => setDbConfig({...dbConfig, database: e.target.value})}
-                                            className="input" />
-                                        <input type="text" placeholder="Utente" value={dbConfig.user}
-                                            onChange={(e) => setDbConfig({...dbConfig, user: e.target.value})}
-                                            className="input" />
-                                        <input type="password" placeholder="Password" value={dbConfig.password}
-                                            onChange={(e) => setDbConfig({...dbConfig, password: e.target.value})}
-                                            className="input" />
+                                        <div>
+                                            <label className="subtitle" style={{ display: 'block', marginBottom: '6px' }}>Host</label>
+                                            <input type="text" placeholder="Host" aria-label="Host" value={dbConfig.host}
+                                                onChange={(e) => setDbConfig({...dbConfig, host: e.target.value})}
+                                                className="input" />
+                                        </div>
+                                        <div>
+                                            <label className="subtitle" style={{ display: 'block', marginBottom: '6px' }}>Porta</label>
+                                            <input type="text" placeholder="Porta" aria-label="Porta" value={dbConfig.port}
+                                                onChange={(e) => setDbConfig({...dbConfig, port: e.target.value})}
+                                                className="input" />
+                                        </div>
+                                        <div>
+                                            <label className="subtitle" style={{ display: 'block', marginBottom: '6px' }}>Database</label>
+                                            <input type="text" placeholder="Database" aria-label="Database" value={dbConfig.database}
+                                                onChange={(e) => setDbConfig({...dbConfig, database: e.target.value})}
+                                                className="input" />
+                                        </div>
+                                        <div>
+                                            <label className="subtitle" style={{ display: 'block', marginBottom: '6px' }}>Utente</label>
+                                            <input type="text" placeholder="Utente" aria-label="Utente" value={dbConfig.user}
+                                                onChange={(e) => setDbConfig({...dbConfig, user: e.target.value})}
+                                                className="input" />
+                                        </div>
+                                        <div>
+                                            <label className="subtitle" style={{ display: 'block', marginBottom: '6px' }}>Password</label>
+                                            <input type="password" placeholder="Password" aria-label="Password" value={dbConfig.password}
+                                                onChange={(e) => setDbConfig({...dbConfig, password: e.target.value})}
+                                                className="input" />
+                                        </div>
                                     </div>
                                     <div className="controls" style={{ marginTop: '14px' }}>
                                         <button onClick={connectToDatabase} disabled={isLoading}
