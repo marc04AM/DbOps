@@ -1,29 +1,22 @@
 {
-  "name": "dbops-electron",
+  "name": "dbops",
   "version": "1.0.0",
-  "description": "DbOps Electron app",
-  "author": "Sistec",
-  "main": "electron/main.js",
+  "description": "PLC Alarm Manager - Database Operations Tool",
+  "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dev:backend": "node backend/server.js",
-    "postinstall": "npm --prefix backend install",
-    "dist": "set ELECTRON_BUILDER_ALLOW_UNRESOLVED_SYMLINKS=1 && electron-builder"
+    "start:server": "node server.js",
+    "dev": "electron ."
+  },
+  "keywords": ["plc", "alarm", "database", "mysql"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mysql2": "^3.6.5",
+    "cors": "^2.8.5"
   },
   "devDependencies": {
-    "electron": "^30.0.0",
-    "electron-builder": "^24.13.3"
-  },
-  "build": {
-    "appId": "com.sistec.dbops",
-    "productName": "DbOps",
-    "asar": false,
-    "files": [
-      "electron/**",
-      "backend/**"
-    ],
-    "directories": {
-      "output": "dist"
-    }
+    "electron": "^31.2.0"
   }
 }

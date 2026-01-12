@@ -3,7 +3,7 @@ const mysql = require('mysql2/promise');
 const cors = require('cors');
 
 const app = express();
-const PORT = 3000;
+const DEFAULT_PORT = 3001;
 
 app.use(cors());
 app.use(express.json());
@@ -148,23 +148,51 @@ app.post('/api/apply', async (req, res) => {
 const path = require('path');
 
 // Serve frontend static files from ./public
-const staticPath = path.join(__dirname, 'public');
+const staticPath = path.resolve(__dirname, 'public');
+const indexFile = path.join(staticPath, 'index.html');
 app.use(express.static(staticPath));
 
 // For SPA routes (non-API), return index.html
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api')) return next();
-  res.sendFile(path.join(staticPath, 'index.html'));
+app.get(/^\/(?!api).*/, (req, res) => {
+  res.sendFile(indexFile, (err) => {
+    if (err) {
+      console.error('Failed to serve index.html:', err);
+      res.status(err.statusCode || 500).end();
+    }
+  });
 });
 
-process.on('SIGINT', async () => {
-  console.log('\nChiusura server...');
+const startServer = async (port = DEFAULT_PORT) => {
+  return new Promise((resolve, reject) => {
+    const server = app.listen(port, () => {
+      console.log(`Server in ascolto sulla porta ${port}`);
+      resolve({ app, server, port });
+    });
+    server.on('error', reject);
+  });
+};
+
+const stopServer = async (server) => {
+  if (server) {
+    await new Promise((resolve) => server.close(resolve));
+  }
   if (dbConnection) {
     await dbConnection.end();
+    dbConnection = null;
   }
-  process.exit(0);
-});
+};
 
-app.listen(PORT, () => {
-  console.log(`✓ Server in ascolto sulla porta ${PORT}`);
-});
+if (require.main === module) {
+  startServer().catch((err) => {
+    console.error('Errore avvio server:', err);
+    process.exit(1);
+  });
+
+  process.on('SIGINT', async () => {
+    console.log('\nChiusura server...');
+    await stopServer();
+    process.exit(0);
+  });
+}
+
+module.exports = { startServer, stopServer };
