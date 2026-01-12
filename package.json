@@ -6,17 +6,40 @@
   "scripts": {
     "start": "electron .",
     "start:server": "node server.js",
-    "dev": "electron ."
+    "dev": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
-  "keywords": ["plc", "alarm", "database", "mysql"],
+  "keywords": [
+    "plc",
+    "alarm",
+    "database",
+    "mysql"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.18.2",
-    "mysql2": "^3.6.5",
-    "cors": "^2.8.5"
+    "mysql2": "^3.6.5"
   },
   "devDependencies": {
-    "electron": "^31.2.0"
+    "electron": "^31.2.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.dbops.app",
+    "productName": "DbOps",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!dist/**",
+      "!node_modules/.cache/**"
+    ],
+    "win": {
+      "target": "nsis"
+    }
   }
 }
