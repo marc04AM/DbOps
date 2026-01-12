@@ -39,7 +39,8 @@
       "!node_modules/.cache/**"
     ],
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "assets/app-icon.ico"
     }
   }
 }
