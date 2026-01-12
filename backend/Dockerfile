@@ -2,11 +2,16 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+# Install backend dependencies (package.json lives in backend/)
+COPY backend/package*.json ./
 
-RUN npm install
+RUN npm install --production
 
-COPY . .
+# Copy backend source
+COPY backend/ ./
+
+# Copy frontend static files into the image
+COPY frontend/ ./public/
 
 EXPOSE 3000
 

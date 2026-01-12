@@ -145,6 +145,18 @@ app.post('/api/apply', async (req, res) => {
   }
 });
 
+const path = require('path');
+
+// Serve frontend static files from ./public
+const staticPath = path.join(__dirname, 'public');
+app.use(express.static(staticPath));
+
+// For SPA routes (non-API), return index.html
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) return next();
+  res.sendFile(path.join(staticPath, 'index.html'));
+});
+
 process.on('SIGINT', async () => {
   console.log('\nChiusura server...');
   if (dbConnection) {
