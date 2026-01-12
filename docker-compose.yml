@@ -1,9 +1,0 @@
-services:
-  backend:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    container_name: DbOps-backend
-    restart: always
-    ports:
-      - "3000:3000"

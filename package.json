@@ -1,0 +1,29 @@
+{
+  "name": "dbops-electron",
+  "version": "1.0.0",
+  "description": "DbOps Electron app",
+  "author": "Sistec",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev:backend": "node backend/server.js",
+    "postinstall": "npm --prefix backend install",
+    "dist": "set ELECTRON_BUILDER_ALLOW_UNRESOLVED_SYMLINKS=1 && electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.sistec.dbops",
+    "productName": "DbOps",
+    "asar": false,
+    "files": [
+      "electron/**",
+      "backend/**"
+    ],
+    "directories": {
+      "output": "dist"
+    }
+  }
+}
