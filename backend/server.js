@@ -18,6 +18,18 @@ const dbConfig = {
   password: process.env.DB_PASSWORD || 'plcpassword'
 };
 
+async function initConnection() {
+  try {
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    dbConnection = await mysql.createConnection(dbConfig);
+    console.log('✓ Connesso al database MySQL');
+  } catch (error) {
+    console.error('✗ Errore connessione DB:', error.message);
+  }
+}
+
+initConnection();
+
 app.post('/api/connect', async (req, res) => {
   const { host, port, database, user, password } = req.body;
 
